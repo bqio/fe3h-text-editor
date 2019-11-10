@@ -24,12 +24,13 @@ namespace FE3H_Text_Editor
         {
             Text += $" v{ConfigurationManager.AppSettings["Version"]}";
         }
-
         private void OpenFileMenu_Click(object sender, EventArgs e)
         {
             FileDialog.Filter = "Binary file (*.bin)|*.bin";
             if (FileDialog.ShowDialog() == DialogResult.OK)
             {
+                Sidebar.Nodes.Clear();
+
                 TreeNode Node = new TreeNode(Path.GetFileName(FileDialog.FileName))
                 {
                     Name = FileDialog.FileName,
@@ -37,6 +38,28 @@ namespace FE3H_Text_Editor
                 };
 
                 Sidebar.Nodes.Add(Node);
+                Sidebar.Enabled = true;
+            }
+        }
+        private void OpenFolderMenu_Click(object sender, EventArgs e)
+        {
+            if (FolderDialog.ShowDialog() == DialogResult.OK)
+            {
+                Sidebar.Nodes.Clear();
+
+                string[] files = Directory.EnumerateFiles(FolderDialog.SelectedPath, "*.*", SearchOption.AllDirectories).ToArray();
+
+                foreach (var file in files)
+                {
+                    TreeNode Node = new TreeNode(Path.GetFileName(file))
+                    {
+                        Name = file,
+                        ContextMenuStrip = ContextMenu
+                    };
+
+                    Sidebar.Nodes.Add(Node);
+                }
+
                 Sidebar.Enabled = true;
             }
         }
@@ -70,7 +93,6 @@ namespace FE3H_Text_Editor
                 MessageBox.Show("Unsupported file format.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void ConvertSupportBinaryToText(TreeNode node)
         {
             using (var reader = new BinaryReader(File.OpenRead(node.Name)))
@@ -98,7 +120,6 @@ namespace FE3H_Text_Editor
                 }
             }
         }
-
         private void ConvertMapBinaryToText(TreeNode node)
         {
             using (var reader = new BinaryReader(File.OpenRead(node.Name)))
@@ -121,27 +142,6 @@ namespace FE3H_Text_Editor
                     };
                     node.Nodes.Add(textNode);
                 }
-            }
-        }
-
-        private void OpenFolderMenu_Click(object sender, EventArgs e)
-        {
-            if (FolderDialog.ShowDialog() == DialogResult.OK)
-            {
-                string[] files = Directory.EnumerateFiles(FolderDialog.SelectedPath, "*.*", SearchOption.AllDirectories).ToArray();
-
-                foreach (var file in files)
-                {
-                    TreeNode Node = new TreeNode(Path.GetFileName(file))
-                    {
-                        Name = file,
-                        ContextMenuStrip = ContextMenu
-                    };
-
-                    Sidebar.Nodes.Add(Node);
-                }
-
-                Sidebar.Enabled = true;
             }
         }
     }
